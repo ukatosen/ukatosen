@@ -1,123 +1,95 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>羽化to線</title>
-<style>
-  /* ベーススタイル */
-  body {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100vh;
-    margin: 0;
-    background-color: white;
-  }
-
-  /* 繭の形状を表すドット */
-  .cocoon {
-    display: grid;
-    grid-template-columns: 10px 10px 10px 10px 10px;
-    grid-gap: 3px;
-    transition: transform 1s ease-in-out;
-    cursor: pointer;
-  }
-
-  .dot {
-    width: 10px;
-    height: 10px;
-    background-color: #333;
-    border-radius: 50%;
-    transition: transform 0.6s ease-in-out, opacity 0.6s ease-in-out;
-  }
-
-  /* 四隅のドットを非表示に */
-  .dot:nth-child(1),
-  .dot:nth-child(5),
-  .dot:nth-child(21),
-  .dot:nth-child(25) {
-    visibility: hidden;
-  }
-
-  /* 外側と内側のドットの透明度 */
-  .dot:nth-child(2), .dot:nth-child(4),
-  .dot:nth-child(6), .dot:nth-child(10),
-  .dot:nth-child(16), .dot:nth-child(20),
-  .dot:nth-child(22), .dot:nth-child(24) {
-    opacity: 0.4;
-  }
-
-  .dot:nth-child(7), .dot:nth-child(9),
-  .dot:nth-child(12), .dot:nth-child(14),
-  .dot:nth-child(17), .dot:nth-child(19) {
-    opacity: 0.7;
-  }
-
-  /* ホバーで羽化を表現（蛾の形） */
-  .cocoon:not(.clicked):hover .dot:nth-child(11),
-  .cocoon:not(.clicked):hover .dot:nth-child(12),
-  .cocoon:not(.clicked):hover .dot:nth-child(14),
-  .cocoon:not(.clicked):hover .dot:nth-child(15) {
-    transform: translateY(-10px) scale(1.3);
-    opacity: 0.9;
-  }
-
-  /* 翼の広がりをイメージ */
-  .cocoon:not(.clicked):hover .dot:nth-child(6),
-  .cocoon:not(.clicked):hover .dot:nth-child(7),
-  .cocoon:not(.clicked):hover .dot:nth-child(20),
-  .cocoon:not(.clicked):hover .dot:nth-child(21) {
-    transform: translateX(-10px) translateY(-5px) scale(1.2);
-    opacity: 0.8;
-  }
-
-  .cocoon:not(.clicked):hover .dot:nth-child(10),
-  .cocoon:not(.clicked):hover .dot:nth-child(9),
-  .cocoon:not(.clicked):hover .dot:nth-child(16),
-  .cocoon:not(.clicked):hover .dot:nth-child(25) {
-    transform: translateX(10px) translateY(-5px) scale(1.2);
-    opacity: 0.8;
-  }
-
-  /* クリックで3,8,13,18,23番目以外のドットをゆっくりと消す */
-  .cocoon.clicked .dot {
-    opacity: 0;
-    transition: opacity 1.5s ease-out;
-  }
-
-  /* 3,8,13,18,23番目のドットだけ残す */
-  .cocoon.clicked .dot:nth-child(3),
-  .cocoon.clicked .dot:nth-child(8),
-  .cocoon.clicked .dot:nth-child(13),
-  .cocoon.clicked .dot:nth-child(18),
-  .cocoon.clicked .dot:nth-child(23) {
-    opacity: 1;
-  }
-
-  
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>羽化to線</title>
+    <style>
+        body, html {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: transparent;
+            overflow: hidden;
+        }
+        canvas {
+            background-color: transparent;
+            display: block;
+        }
+    </style>
 </head>
 <body>
+    <canvas id="spiralCanvas"></canvas>
 
-<div class="cocoon" onclick="transformToLine()">
-  <!-- ドット生成（繭の形状に配置） -->
-  <div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div>
-  <div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div>
-  <div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div>
-  <div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div>
-  <div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div>
-</div>
+    <script>
+        const canvas = document.getElementById('spiralCanvas');
+        const ctx = canvas.getContext('2d');
+        let angleOffset = 0; // 回転角度のオフセット
+        let transformFactor = 1; // 変形率
+        let centerYOffset = 0; // 中心のY位置オフセット
 
-<script>
-    function transformToLine() {
-      const cocoon = document.querySelector('.cocoon');
-      cocoon.classList.toggle('clicked');
-      setTimeout(() => {
-        window.location.href = 'https://www.notion.so/ukatosen/public-13a366a6359180e1bf58dad9dc45d2b7'; // Replace with your desired URL
-      }, 1500); // 1.5 seconds delay
-    }
-  </script>
+        // キャンバスクリック時にURLに遷移
+        canvas.addEventListener('click', () => {
+            window.open('https://ukatosen.notion.site/public-13a366a6359180e1bf58dad9dc45d2b7', '_blank'); // 新しいタブでURLを開く
+        });
 
+        // ウィンドウサイズに合わせてキャンバスのサイズを調整
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+
+        function drawTransformingSpiral() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.strokeStyle = "#707070"; // 線の色
+            ctx.lineWidth = 1;
+
+            const centerX = canvas.width / 2; // 中央のX位置
+            const centerY = canvas.height / 2 + centerYOffset; // 中央のY位置にオフセットを追加
+            let maxRadius = 150; // 初期の最大半径
+            let angle = 0;
+
+            ctx.beginPath();
+
+            // 球体から一本の線に変形する螺旋
+            for (let i = 0; i < 1000; i++) {
+                angle += 0.1;
+
+                // 球体から直線に変形するために横と縦の半径を調整
+                const horizontalRadius = maxRadius * Math.cos(angle / 10) * transformFactor;
+                const verticalRadius = maxRadius * Math.sin(angle / 20) * transformFactor;
+
+                // 線として伸ばす長さ（上下に伸ばす）
+                const lineLength = (1 - transformFactor) * maxRadius * i / 100;
+
+                const x = centerX + horizontalRadius * Math.cos(angle + angleOffset);
+                const y = centerY + verticalRadius * Math.sin(angle + angleOffset) + lineLength;
+
+                ctx.lineTo(x, y);
+            }
+            ctx.stroke();
+
+            // 回転角度を少しずつ増加させる
+            angleOffset += 0.01;
+
+            // 球体から線に変形させるための変形率を徐々に減少させる
+            if (transformFactor > 0) {
+                transformFactor -= 0.0005; // 変形をゆっくり進める
+            }
+
+            // 中心のY位置を徐々に上に移動
+            if (centerYOffset > -canvas.height / 2 + 20) { // 上限を設定
+                centerYOffset -= 0.5; // ゆっくりと上にずらす
+            }
+
+            requestAnimationFrame(drawTransformingSpiral);
+        }
+
+        drawTransformingSpiral();
+    </script>
 </body>
 </html>
